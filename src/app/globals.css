@@ -1,0 +1,14 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  background-color: #f7f5f0;
+  color: #1a1a18;
+}
+
+@layer utilities {
+  .aspect-reel {
+    aspect-ratio: 9 / 16;
+  }
+}
