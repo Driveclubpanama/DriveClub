@@ -1,30 +1,47 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import type { Article } from "@/types/database";
 import { formatDate } from "@/lib/utils";
+import { ImageCropModal } from "./ImageCropModal";
 
 export function ArticleEditorCard({ article }: { article: Article }) {
   const [title, setTitle] = useState(article.title);
   const [body, setBody] = useState(article.body);
   const [imageUrl, setImageUrl] = useState(article.cover_image_url);
+  const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<
     "save" | "publish" | "unpublish" | "delete" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setError(null);
+    setPendingImageSrc(URL.createObjectURL(file));
+  }
+
+  function handleCropCancel() {
+    if (pendingImageSrc) URL.revokeObjectURL(pendingImageSrc);
+    setPendingImageSrc(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleCropConfirm(blob: Blob) {
+    if (pendingImageSrc) URL.revokeObjectURL(pendingImageSrc);
+    setPendingImageSrc(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     setUploading(true);
     setError(null);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", blob, "portada.jpg");
 
     const response = await fetch("/api/admin/upload", { method: "POST", body: formData });
     setUploading(false);
@@ -99,6 +116,7 @@ export function ArticleEditorCard({ article }: { article: Article }) {
           </div>
         )}
         <input
+          ref={fileInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp,image/gif"
           onChange={handleFileChange}
@@ -182,6 +200,14 @@ export function ArticleEditorCard({ article }: { article: Article }) {
           </button>
         </div>
       </div>
+
+      {pendingImageSrc && (
+        <ImageCropModal
+          imageSrc={pendingImageSrc}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </div>
   );
 }

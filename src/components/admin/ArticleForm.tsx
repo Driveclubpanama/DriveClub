@@ -2,26 +2,42 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import { ImageCropModal } from "./ImageCropModal";
 
 export function ArticleForm() {
   const [title, setTitle] = useState("");
   const [body, setBody] = useState("");
   const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [pendingImageSrc, setPendingImageSrc] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
 
-  async function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
+  function handleFileChange(event: React.ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
     if (!file) return;
+    setError(null);
+    setPendingImageSrc(URL.createObjectURL(file));
+  }
+
+  function handleCropCancel() {
+    if (pendingImageSrc) URL.revokeObjectURL(pendingImageSrc);
+    setPendingImageSrc(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function handleCropConfirm(blob: Blob) {
+    if (pendingImageSrc) URL.revokeObjectURL(pendingImageSrc);
+    setPendingImageSrc(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
 
     setUploading(true);
     setError(null);
 
     const formData = new FormData();
-    formData.append("file", file);
+    formData.append("file", blob, "portada.jpg");
 
     const response = await fetch("/api/admin/upload", { method: "POST", body: formData });
     setUploading(false);
@@ -123,6 +139,14 @@ export function ArticleForm() {
       >
         {submitting ? "Creando…" : "Crear borrador"}
       </button>
+
+      {pendingImageSrc && (
+        <ImageCropModal
+          imageSrc={pendingImageSrc}
+          onCancel={handleCropCancel}
+          onConfirm={handleCropConfirm}
+        />
+      )}
     </form>
   );
 }
