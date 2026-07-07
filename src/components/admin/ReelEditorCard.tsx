@@ -10,13 +10,27 @@ export function ReelEditorCard({ reel }: { reel: Reel }) {
   const [titleEs, setTitleEs] = useState(reel.title_es ?? "");
   const [bodyEs, setBodyEs] = useState(reel.body_es ?? "");
   const [loadingAction, setLoadingAction] = useState<
-    "save" | "approve" | "publish" | "reject" | null
+    "save" | "approve" | "publish" | "reject" | "publish_as_article" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  async function runAction(action: "save" | "approve" | "publish" | "reject") {
-    if (action === "reject" && !window.confirm("¿Rechazar este Reel? No volverá a aparecer en el panel.")) {
+  async function runAction(
+    action: "save" | "approve" | "publish" | "reject" | "publish_as_article"
+  ) {
+    if (
+      action === "reject" &&
+      !window.confirm("¿Rechazar este Reel? No volverá a aparecer en el panel.")
+    ) {
+      return;
+    }
+
+    if (
+      action === "publish_as_article" &&
+      !window.confirm(
+        "¿Publicar este Reel como artículo en la Revista? Dejará de aparecer en Noticias Rápidas."
+      )
+    ) {
       return;
     }
 
@@ -116,6 +130,16 @@ export function ReelEditorCard({ reel }: { reel: Reel }) {
               className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-ink text-cream hover:bg-gold hover:text-ink disabled:opacity-50"
             >
               {loadingAction === "publish" ? "Traduciendo y publicando…" : "Aprobar y publicar"}
+            </button>
+          )}
+
+          {reel.status !== "published" && (
+            <button
+              onClick={() => runAction("publish_as_article")}
+              disabled={loadingAction !== null}
+              className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-gold text-ink hover:bg-ink hover:text-cream disabled:opacity-50"
+            >
+              {loadingAction === "publish_as_article" ? "Publicando en Revista…" : "Publicar en Revista"}
             </button>
           )}
 

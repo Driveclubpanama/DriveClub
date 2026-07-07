@@ -1,4 +1,4 @@
-export type ReelStatus = "pending" | "approved" | "published" | "rejected";
+export type ReelStatus = "pending" | "approved" | "published" | "rejected" | "converted";
 
 export type Reel = {
   id: string;
