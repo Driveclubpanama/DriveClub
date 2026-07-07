@@ -5,6 +5,7 @@ import { ArticleEditorCard } from "@/components/admin/ArticleEditorCard";
 import { LogoutButton } from "@/components/admin/LogoutButton";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export default async function AdminArticlesPage() {
   const supabase = createAdminClient();

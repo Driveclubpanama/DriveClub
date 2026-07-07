@@ -7,7 +7,7 @@ import type { Reel } from "@/types/database";
 interface PatchBody {
   title_es?: string;
   body_es?: string;
-  action?: "save" | "approve" | "publish";
+  action?: "save" | "approve" | "publish" | "reject";
 }
 
 export async function PATCH(
@@ -41,6 +41,10 @@ export async function PATCH(
 
   if (body.action === "approve") {
     update.status = "approved";
+  }
+
+  if (body.action === "reject") {
+    update.status = "rejected";
   }
 
   if (body.action === "publish") {

@@ -4,6 +4,7 @@ import { ReelEditorCard } from "@/components/admin/ReelEditorCard";
 import { LogoutButton } from "@/components/admin/LogoutButton";
 
 export const dynamic = "force-dynamic";
+export const fetchCache = "force-no-store";
 
 export default async function AdminDashboardPage() {
   const supabase = createAdminClient();

@@ -11,7 +11,7 @@ export function ArticleEditorCard({ article }: { article: Article }) {
   const [imageUrl, setImageUrl] = useState(article.cover_image_url);
   const [uploading, setUploading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<
-    "save" | "publish" | "unpublish" | null
+    "save" | "publish" | "unpublish" | "delete" | null
   >(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
@@ -47,6 +47,29 @@ export function ArticleEditorCard({ article }: { article: Article }) {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ title, body, cover_image_url: imageUrl, action }),
+    });
+
+    setLoadingAction(null);
+
+    if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
+      setError(data.error ?? "Ocurrió un error.");
+      return;
+    }
+
+    router.refresh();
+  }
+
+  async function handleDelete() {
+    if (!window.confirm("¿Eliminar este artículo para siempre? No se puede deshacer.")) {
+      return;
+    }
+
+    setLoadingAction("delete");
+    setError(null);
+
+    const response = await fetch(`/api/admin/articles/${article.id}`, {
+      method: "DELETE",
     });
 
     setLoadingAction(null);
@@ -149,6 +172,14 @@ export function ArticleEditorCard({ article }: { article: Article }) {
               {loadingAction === "unpublish" ? "Ocultando…" : "Despublicar"}
             </button>
           )}
+
+          <button
+            onClick={handleDelete}
+            disabled={loadingAction !== null}
+            className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-red-700/40 text-red-700 hover:bg-red-700 hover:text-cream disabled:opacity-50"
+          >
+            {loadingAction === "delete" ? "Eliminando…" : "Eliminar"}
+          </button>
         </div>
       </div>
     </div>

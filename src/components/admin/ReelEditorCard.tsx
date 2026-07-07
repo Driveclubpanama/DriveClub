@@ -9,13 +9,17 @@ import { formatDate } from "@/lib/utils";
 export function ReelEditorCard({ reel }: { reel: Reel }) {
   const [titleEs, setTitleEs] = useState(reel.title_es ?? "");
   const [bodyEs, setBodyEs] = useState(reel.body_es ?? "");
-  const [loadingAction, setLoadingAction] = useState<"save" | "approve" | "publish" | null>(
-    null
-  );
+  const [loadingAction, setLoadingAction] = useState<
+    "save" | "approve" | "publish" | "reject" | null
+  >(null);
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
-  async function runAction(action: "save" | "approve" | "publish") {
+  async function runAction(action: "save" | "approve" | "publish" | "reject") {
+    if (action === "reject" && !window.confirm("¿Rechazar este Reel? No volverá a aparecer en el panel.")) {
+      return;
+    }
+
     setLoadingAction(action);
     setError(null);
 
@@ -112,6 +116,16 @@ export function ReelEditorCard({ reel }: { reel: Reel }) {
               className="font-mono text-xs uppercase tracking-widest px-4 py-2 bg-ink text-cream hover:bg-gold hover:text-ink disabled:opacity-50"
             >
               {loadingAction === "publish" ? "Traduciendo y publicando…" : "Aprobar y publicar"}
+            </button>
+          )}
+
+          {reel.status !== "published" && (
+            <button
+              onClick={() => runAction("reject")}
+              disabled={loadingAction !== null}
+              className="font-mono text-xs uppercase tracking-widest px-4 py-2 border border-red-700/40 text-red-700 hover:bg-red-700 hover:text-cream disabled:opacity-50"
+            >
+              {loadingAction === "reject" ? "Rechazando…" : "Rechazar"}
             </button>
           )}
         </div>
